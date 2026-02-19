@@ -1,5 +1,5 @@
-/*Дата початку: 14,02,2026;
-2Д-гра де персонаж(символ або ACSII-зображення) буде ходити стрілочками або wasd і бити ворогоів ЛКМ при близькому зустрічі з ним або на відстані, якщо використовує лук чи камінь. Можливо перекласти*/
+/*Start date: 14,02,2026;
+2D game where the character (character or ACSII-image) will walk with arrows or wasd and hit enemies with LMB when close to him or at a distance if using a bow or stone. Possible translation into English*/
 #include <iostream>
 #include <windows.h>
 #include <ctime>
@@ -193,7 +193,7 @@ void inventar(Player & player, int x, int y){
 void Game(Player & player, int dx, int dy){
     player.HpSet();
     system("cls");
-    //зробити постійний спавн через певний час
+    //make a permanent spawn after a certain time
     Enemy enemy[]={Enemy(0),Enemy(1),Enemy(2),Enemy(3)};
     inventar(player, 140, 3);
     while(player.isAlive()){
@@ -232,7 +232,7 @@ void Upgrade(Player & player){
     while(true){
         setcurspos(0, 0);
         cout<<"DMG: "<<player.GetDamage()<<" Hp: "<<player.GetHp()<<" Recovery Hp: "<<player.GetRepair()<<endl;
-        cout<<"Нажми .. щоб: b - повернутися назад; a - +1 до атаки; H - +1 до хп; h - -0,1 сек до відновлення хп\n";
+        cout<<"Press .. to: b - go back; a - +1 to attack; H - +1 to HP; h - -0.1 sec to HP recovery\n";
         switch(_getch()){
             case 'b': system("cls"); return;
             case 'a': player.AddDamage(1); break;
@@ -245,7 +245,7 @@ void Properties(){
     system("cls");
     while(true){
         setcurspos(0, 0);
-        cout<<"Нажми .. щоб: b - повернутися назад\n";
+        cout<<"Press .. to: b - go back\n";
         switch(_getch()){
             case 'b': system("cls"); return;
         }
@@ -254,7 +254,7 @@ void Properties(){
 void Menu(Player & player){
     while(true){
         setcurspos(0, 0);
-        cout<<"Нажми .. щоб: s почати грати; u перейти до апґрейдів; p перейти до налаштувань\n";
+        cout<<"Press .. to: s start playing; u go to upgrades; p go to settings\n";
         switch(_getch()){
             case 's': Game(player, bx, by); break;
             case 'u': Upgrade(player); break;
@@ -269,3 +269,4 @@ int main(){
     Menu(player);
     return 0;
 }
+
