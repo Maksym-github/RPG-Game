@@ -4,10 +4,12 @@
 #include <windows.h>
 #include <ctime>
 #include <conio.h>
+#include <chrono>
 
 using namespace std;
 
-int bx=0, by=4, c=4;
+int bx=0, by=4, c=3;
+string state;
 
 HANDLE CursOut=GetStdHandle(STD_OUTPUT_HANDLE);
 HANDLE CursIn=GetStdHandle(STD_INPUT_HANDLE);
@@ -15,11 +17,36 @@ COORD curspos;
 
 void setcurspos(int x, int y) {curspos.X=x; curspos.Y=y; SetConsoleCursorPosition(CursOut, curspos);}
 
+class Timer
+{
+private:
+	using clock_t = chrono::high_resolution_clock;
+	using second_t = chrono::duration<double, ratio<1> >;
+
+	chrono::time_point<clock_t> m_beg;
+
+public:
+	Timer() : m_beg(clock_t::now()) {}
+
+	void reset()
+	{
+		m_beg = clock_t::now();
+	}
+
+	double elapsed() const
+	{
+		return chrono::duration_cast<second_t>(clock_t::now() - m_beg).count();
+	}
+
+};
+
 class Character {
 protected:
     int m_hp, m_damage, m_x, m_y, m_repair=2000;
+    double m_speed;
+    Timer m_timer;
 public:
-    Character(int hp, int damage, int x, int y): m_hp(hp), m_damage(damage), m_x(x), m_y(y) {}
+    Character(int hp, int damage, int x, int y, double speed): m_hp(hp), m_damage(damage), m_x(x), m_y(y), m_speed(speed) {}
     void takeDamage(int amount){
         m_hp-=amount;
     }
@@ -43,20 +70,22 @@ private:
     float experience;
     char a;
 public:
-    Player(string name):Character(10, 5, bx+rand()%129+1, by+rand()%29+1), m_name(name){}
+    Player(string name):Character(10, 5, bx+rand()%129+1, by+rand()%29+1, 0.1), m_name(name){}
     string GetName() const { return m_name; }
-    int GetHp() const { return m_hp; }
-    int GetDamage() const { return m_damage; }
-    int GetRepair() const { return m_repair; }
+    double GetHp() const { return m_hp; }
+    double GetDamage() const { return m_damage; }
+    double GetRepair() const { return m_repair; }
     int GetPosX() const { return m_x; }
     int GetPosY() const { return m_y; }
-    void AddDamage(int value) { m_damage+=value; }
-    void RepairInc(int value) { m_repair-=value; }
-    void HpInc(int value) { m_hp+=value; hp_max+=value; }
+    double Speed() const { return m_speed; }
+    void AddDamage(double value) { m_damage+=value; }
+    void RepairInc(double value) { m_repair-=value; }
+    void SpeedInc(double value) { m_speed-=value; }
+    void HpInc(double value) { m_hp+=value; hp_max+=value; }
     void HpSet() { m_hp=hp_max;}
     void Move(){
         int nx=m_x, ny=m_y;
-        if(_kbhit()){
+        if(_kbhit()&&m_timer.elapsed()>=m_speed){
             switch (_getch()) {
                 case 'w': ny--; break;
                 case 's': ny++; break;
@@ -70,6 +99,7 @@ public:
                 case 77: nx++; break;
                 default: return;
             }*/
+            m_timer.reset();
         }
         if(nx<=bx||nx>=bx+123||ny<=by||ny>=by+29) return;
         m_x=nx;
@@ -101,21 +131,23 @@ public:
 class Enemy: public Character{
 private:
     char a;
-    int m_n;
+    int m_n=0;
 public:
-    int damage;
     int lastAttack = 0;
-    Enemy(int n):Character(10, 1, bx+rand()%129+1, by+rand()%29+1), damage(m_damage), m_n(n){}
+    Enemy(int n):Character(10, 1, bx+rand()%129+1, by+rand()%29+1, 0.3), m_n(n){}
     int GetHp()const{
         return m_hp;
     }
+    int GetDamage() const { return m_damage; }
+    int Speed() const { return m_speed; }
     void Move(const Player & player){
-        int rx = player.GetPosX()-m_x, ry = player.GetPosY()-m_y;
-        if(rx+8>=bx||rx<=bx+130||ry>=by-1||ry+3<=by+30){
-            if(rx>9) {m_x++; a='r';}
-            else if(rx<-9) {m_x--; a='l';}
-            if(ry>4) {m_y++;}
-            else if(ry<-4) {m_y--;}
+        int rx = player.GetPosX()-m_x, ry = player.GetPosY()-m_y, kx=8, ky=3;
+        if((rx+kx>=bx||rx<=bx+130||ry>=by-1||ry+ky<=by+30)&& m_timer.elapsed()>=m_speed){
+            if(rx>kx) {m_x++; a='r';}
+            else if(rx<-kx) {m_x--; a='l';}
+            if(ry>ky) {m_y++;}
+            else if(ry<-ky) {m_y--;}
+            m_timer.reset();
         }
         else return;
     }
@@ -144,7 +176,7 @@ public:
 void Hit(Player & player, Enemy & enemy){
     int now = GetTickCount();
     int rx=abs(player.GetPosX()-enemy.GetPosX()), ry=abs(player.GetPosY()-enemy.GetPosY());
-    if(rx<=9&&ry<=4){
+    if(rx<=8&&ry<=3){
         if(enemy.isAlive()){
             if(_kbhit()){
                 switch (_getch()){
@@ -152,7 +184,7 @@ void Hit(Player & player, Enemy & enemy){
                 }
             }
             if(now-enemy.lastAttack>=2000){
-                player.takeDamage(enemy.damage);
+                player.takeDamage(enemy.GetDamage());
                 enemy.lastAttack=now;
             }
         }
@@ -193,30 +225,54 @@ void inventar(Player & player, int x, int y){
 void Game(Player & player, int dx, int dy){
     player.HpSet();
     system("cls");
-    //make a permanent spawn after a certain time
+    //зробити постійний спавн через певний час
     Enemy enemy[]={Enemy(0),Enemy(1),Enemy(2),Enemy(3)};
     inventar(player, 140, 3);
+    state="play";
     while(player.isAlive()){
-        drawBorder(dx, dy);
-        setcurspos(0, 0);
-        cout<<"Your name: "<<player.GetName()<<" Hp: "<<player.GetHp()<<"    "<<" Damage: "<<player.GetDamage()<<"    ";
-        player.Move();
-        player.Repairing();
-        for(int i=0; i<c; i++)
-            enemy[i].Move(player);
-        player.Clear(8,3);
-        for(int i=0; i<c; i++)
-            enemy[i].Clear(8,3);
-        player.visualplayer(player.GetPosX(), player.GetPosY());
-        for(int i=0; i<c; i++)
-            if(enemy[i].isAlive())
-                enemy[i].visualenemy(enemy[i].GetPosX(), enemy[i].GetPosY());
-        for(int i=0; i<c; i++)
-            Hit(player, enemy[i]);
-        setcurspos(0, dy+30+2);
-        for(int i=0; i<c; i++)
-            cout<<"Hp enemy"<<i<<": "<<enemy[i].GetHp()<<"    ";
-        Sleep(30);
+        if(state=="play"){
+            if(_kbhit()){
+                switch(_getch()){
+                    case 'p': state="pause"; break;
+                }
+            }
+            drawBorder(dx, dy);
+            setcurspos(0, 0);
+            cout<<"Your name: "<<player.GetName()
+            <<" Hp: "<<player.GetHp()
+            <<" Damage: "<<player.GetDamage()
+            <<" Нажми .. щоб: p - зупинити гру";
+            player.Move();
+            player.Repairing();
+            for(int i=0; i<c; i++)
+                enemy[i].Move(player);
+            player.Clear(8,3);
+            for(int i=0; i<c; i++)
+                enemy[i].Clear(8,3);
+            player.visualplayer(player.GetPosX(), player.GetPosY());
+            for(int i=0; i<c; i++)
+                if(enemy[i].isAlive())
+                    enemy[i].visualenemy(enemy[i].GetPosX(), enemy[i].GetPosY());
+            for(int i=0; i<c; i++)
+                Hit(player, enemy[i]);
+            setcurspos(0, dy+30+2);
+            for(int i=0; i<c; i++)
+                cout<<"Hp enemy"<<i<<": "<<enemy[i].GetHp()<<"    ";
+            Sleep(30);
+        }
+        else if(state=="pause"){
+            system("cls");
+            setcurspos(0, 0);
+            cout<<"Нажми .. щоб: p - продовжити бій; e - вийти з бою";
+            setcurspos(53, 16);
+            cout<<"Paused";
+            if(_kbhit()){
+                switch(_getch()){
+                    case 'p': state="play"; system("cls"); break;
+                    case 'e': system("cls"); return;
+                }
+            }
+        }
     }
     if(!player.isAlive()){
         setcurspos(53, 16);
@@ -228,16 +284,19 @@ void Game(Player & player, int dx, int dy){
     }
 }
 void Upgrade(Player & player){
+    player.HpSet();
     system("cls");
     while(true){
         setcurspos(0, 0);
-        cout<<"DMG: "<<player.GetDamage()<<" Hp: "<<player.GetHp()<<" Recovery Hp: "<<player.GetRepair()<<endl;
-        cout<<"Press .. to: b - go back; a - +1 to attack; H - +1 to HP; h - -0.1 sec to HP recovery\n";
+        cout<<"DMG: "<<player.GetDamage()<<" Hp: "<<player.GetHp()<<" Recovery Hp: "<<player.GetRepair()
+        <<" Speed player: "<<player.Speed()<<endl;
+        cout<<"Нажми .. щоб: b - повернутися назад; a - +1 до атаки; H - +1 до хп; h - -0,1 сек до відновлення хп; s - -0,01 сек швидкості ходьби хп\n";
         switch(_getch()){
             case 'b': system("cls"); return;
             case 'a': player.AddDamage(1); break;
             case 'h': player.RepairInc(100); break;
             case 'H': player.HpInc(1); break;
+            case 's': if (player.Speed()>0) player.SpeedInc(0.01); break;
         }
     }
 }
@@ -245,7 +304,7 @@ void Properties(){
     system("cls");
     while(true){
         setcurspos(0, 0);
-        cout<<"Press .. to: b - go back\n";
+        cout<<"Нажми .. щоб: b - повернутися назад\n";
         switch(_getch()){
             case 'b': system("cls"); return;
         }
@@ -254,7 +313,7 @@ void Properties(){
 void Menu(Player & player){
     while(true){
         setcurspos(0, 0);
-        cout<<"Press .. to: s start playing; u go to upgrades; p go to settings\n";
+        cout<<"Нажми .. щоб: s почати грати; u перейти до апґрейдів; p перейти до налаштувань\n";
         switch(_getch()){
             case 's': Game(player, bx, by); break;
             case 'u': Upgrade(player); break;
@@ -269,4 +328,3 @@ int main(){
     Menu(player);
     return 0;
 }
-
