@@ -4,11 +4,11 @@
 #include <windows.h>
 #include <ctime>
 #include <conio.h>
-#include <chrono>
+#include "Timer.h"
 
 using namespace std;
 
-int bx=0, by=4, c=3;
+int bx=0, by=4;
 string state;
 
 HANDLE CursOut=GetStdHandle(STD_OUTPUT_HANDLE);
@@ -17,28 +17,7 @@ COORD curspos;
 
 void setcurspos(int x, int y) {curspos.X=x; curspos.Y=y; SetConsoleCursorPosition(CursOut, curspos);}
 
-class Timer
-{
-private:
-	using clock_t = chrono::high_resolution_clock;
-	using second_t = chrono::duration<double, ratio<1> >;
 
-	chrono::time_point<clock_t> m_beg;
-
-public:
-	Timer() : m_beg(clock_t::now()) {}
-
-	void reset()
-	{
-		m_beg = clock_t::now();
-	}
-
-	double elapsed() const
-	{
-		return chrono::duration_cast<second_t>(clock_t::now() - m_beg).count();
-	}
-
-};
 
 class Character {
 protected:
@@ -134,7 +113,10 @@ private:
     int m_n=0;
 public:
     int lastAttack = 0;
-    Enemy(int n):Character(10, 1, bx+rand()%129+1, by+rand()%29+1, 0.3), m_n(n){}
+    Enemy() : Character(10, 1, 0, 0, 0.3) {
+        m_hp = 0;
+    }
+    Enemy(int hp):Character(hp, 1, bx+rand()%129+1, by+rand()%29+1, 0.3){}
     int GetHp()const{
         return m_hp;
     }
@@ -223,14 +205,27 @@ void inventar(Player & player, int x, int y){
     }
 }
 void Game(Player & player, int dx, int dy){
+    const int MAX_ENEMY = 54;
+    int wave = 1, enemiesToSpawn = wave, spawned = 0, aliveEnemies = 0;
+    Timer spawnTimer;
     player.HpSet();
     system("cls");
-    //зробити постійний спавн через певний час
-    Enemy enemy[]={Enemy(0),Enemy(1),Enemy(2),Enemy(3)};
+    Enemy enemy[MAX_ENEMY];
     inventar(player, 140, 3);
     state="play";
     while(player.isAlive()){
         if(state=="play"){
+            if(spawned < enemiesToSpawn && spawnTimer.elapsed()>=1.5){
+                enemy[spawned] = Enemy(10 + wave * 2);
+                spawned++;
+                aliveEnemies++;
+                spawnTimer.reset();
+            }
+            aliveEnemies = 0;
+            for(int i=0; i<spawned; i++){
+                if(enemy[i].isAlive())
+                    aliveEnemies++;
+            }
             if(_kbhit()){
                 switch(_getch()){
                     case 'p': state="pause"; break;
@@ -244,20 +239,28 @@ void Game(Player & player, int dx, int dy){
             <<" Нажми .. щоб: p - зупинити гру";
             player.Move();
             player.Repairing();
-            for(int i=0; i<c; i++)
-                enemy[i].Move(player);
+            for(int i=0; i<spawned; i++){
+                enemy[i].Move(player);}
             player.Clear(8,3);
-            for(int i=0; i<c; i++)
-                enemy[i].Clear(8,3);
+            for(int i=0; i<spawned; i++){
+                enemy[i].Clear(8,3);}
             player.visualplayer(player.GetPosX(), player.GetPosY());
-            for(int i=0; i<c; i++)
-                if(enemy[i].isAlive())
-                    enemy[i].visualenemy(enemy[i].GetPosX(), enemy[i].GetPosY());
-            for(int i=0; i<c; i++)
-                Hit(player, enemy[i]);
+            for(int i=0; i<spawned; i++){
+                if(enemy[i].isAlive()){
+                    enemy[i].visualenemy(enemy[i].GetPosX(), enemy[i].GetPosY());}
+            }
+            for(int i=0; i<spawned; i++){
+                Hit(player, enemy[i]);}
             setcurspos(0, dy+30+2);
-            for(int i=0; i<c; i++)
-                cout<<"Hp enemy"<<i<<": "<<enemy[i].GetHp()<<"    ";
+            cout<<" Wave: "<<wave<<"; Alive enemies: "<<aliveEnemies<<"; ";
+            for(int i=0; i<spawned; i++){
+                cout<<"Hp enemy"<<i<<": "<<enemy[i].GetHp()<<"    ";}
+            if(aliveEnemies == 0 && spawned == enemiesToSpawn){
+                wave++;
+                enemiesToSpawn=2+wave*2;
+                int enemyHP = 10 + wave * 3;
+                spawned = 0;
+            }
             Sleep(30);
         }
         else if(state=="pause"){
