@@ -1,9 +1,8 @@
 #ifndef TIMER_H_INCLUDED
 #define TIMER_H_INCLUDED
-#include <iostream>
-#include <chrono>
 
 using namespace std;
+
 class Timer{
 private:
 	using clock_t = chrono::high_resolution_clock;
