@@ -3,6 +3,8 @@
 
 extern string state;
 
+int priceupgrades[4]={3, 2, 5, 2}, priceitems[3]={10, 50, 100};
+
 void Game(Player & player, int dx, int dy){
     const int MAX_ENEMY = 54;
     int wave = 1, enemiesToSpawn = wave, spawned = 0, aliveEnemies = 0;
@@ -10,7 +12,7 @@ void Game(Player & player, int dx, int dy){
     player.HpSet();
     system("cls");
     Enemy enemy[MAX_ENEMY];
-    inventar(player, 140, 3);
+    inventar(player, 140, 0);
     state="play";
     while(player.isAlive()){
         if(state=="play"){
@@ -31,11 +33,14 @@ void Game(Player & player, int dx, int dy){
                 }
             }
             drawBorder(dx, dy);
+            SetConsoleOutputCP(1251);
             setcurspos(0, 0);
             cout<<"Your name: "<<player.GetName()
             <<" Hp: "<<player.GetHp()
             <<" Damage: "<<player.GetDamage()
-            <<" Íàæìè .. ùîá: p - çóïèíèòè ãðó";
+            <<" Experience: "<<player.GetExp()
+            <<" Token: "<<player.GetToken()
+            <<"     ÐÐ°Ð¶Ð¼Ð¸ .. Ñ‰Ð¾Ð±: p - Ð·ÑƒÐ¿Ð¸Ð½Ð¸Ñ‚Ð¸ Ð³Ñ€Ñƒ";
             player.Move();
             player.Repairing();
             for(int i=0; i<spawned; i++){
@@ -46,7 +51,8 @@ void Game(Player & player, int dx, int dy){
             player.visualplayer(player.GetPosX(), player.GetPosY());
             for(int i=0; i<spawned; i++){
                 if(enemy[i].isAlive()){
-                    enemy[i].visualenemy(enemy[i].GetPosX(), enemy[i].GetPosY());}
+                    enemy[i].visualenemy(enemy[i].GetPosX(), enemy[i].GetPosY());
+                }
             }
             for(int i=0; i<spawned; i++){
                 Hit(player, enemy[i]);}
@@ -65,7 +71,7 @@ void Game(Player & player, int dx, int dy){
         else if(state=="pause"){
             system("cls");
             setcurspos(0, 0);
-            cout<<"Íàæìè .. ùîá: p - ïðîäîâæèòè á³é; e - âèéòè ç áîþ";
+            cout<<"ÐÐ°Ð¶Ð¼Ð¸ .. Ñ‰Ð¾Ð±: p - Ð¿Ñ€Ð¾Ð´Ð¾Ð²Ð¶Ð¸Ñ‚Ð¸ Ð±Ñ–Ð¹; e - Ð²Ð¸Ð¹Ñ‚Ð¸ Ð· Ð±Ð¾ÑŽ";
             setcurspos(53, 16);
             cout<<"Paused";
             if(_kbhit()){
@@ -90,15 +96,50 @@ void Upgrade(Player & player){
     system("cls");
     while(true){
         setcurspos(0, 0);
-        cout<<"DMG: "<<player.GetDamage()<<" Hp: "<<player.GetHp()<<" Recovery Hp: "<<player.GetRepair()
+        cout<<"Experience: "<<player.GetExp()<<" Token: "<<player.GetToken()<<" \n"
+        <<"DMG: "<<player.GetDamage()
+        <<" Hp: "<<player.GetHp()
+        <<" Recovery Hp: "<<player.GetRepair()
         <<" Speed player: "<<player.Speed()<<endl;
-        cout<<"Íàæìè .. ùîá: b - ïîâåðíóòèñÿ íàçàä; a - +1 äî àòàêè; H - +1 äî õï; h - -0,1 ñåê äî â³äíîâëåííÿ õï; s - -0,01 ñåê øâèäêîñò³ õîäüáè õï\n";
+        cout<<"ÐÐ°Ð¶Ð¼Ð¸ .. Ñ‰Ð¾Ð±: b - Ð¿Ð¾Ð²ÐµÑ€Ð½ÑƒÑ‚Ð¸ÑÑ Ð½Ð°Ð·Ð°Ð´; a - +1 Ð´Ð¾ Ð°Ñ‚Ð°ÐºÐ¸ Ð·Ð° "<<priceupgrades[0]<<" T; H - +1 Ð´Ð¾ Ñ…Ð¿ Ð·Ð° "<<priceupgrades[2]<<" T; h - -0,1 ÑÐµÐº Ð´Ð¾ Ð²Ñ–Ð´Ð½Ð¾Ð²Ð»ÐµÐ½Ð½Ñ Ñ…Ð¿ Ð·Ð° "<<priceupgrades[1]<<" T; s - -0,01 ÑÐµÐº ÑˆÐ²Ð¸Ð´ÐºÐ¾ÑÑ‚Ñ– Ñ…Ð¾Ð´ÑŒÐ±Ð¸ Ñ…Ð¿ Ð·Ð° "<<priceupgrades[3]<<" T;\n";
+        cout<<"1 - ÐºÑƒÐ¿Ð¸Ñ‚Ð¸ Ð¼ÐµÑ‡ Ð†-Ñ€Ñ–Ð²Ð½Ñ Ð·Ð° "<<priceitems[0]<<" Ð¢; 2 - ÐºÑƒÐ¿Ð¸Ñ‚Ð¸ Ð¼ÐµÑ‡ Ð†Ð†-Ñ€Ñ–Ð²Ð½Ñ Ð·Ð° "<<priceitems[1]<<" Ð¢;3 - ÐºÑƒÐ¿Ð¸Ñ‚Ð¸ Ð¼ÐµÑ‡ Ð†Ð†Ð†-Ñ€Ñ–Ð²Ð½Ñ Ð·Ð° "<<priceitems[2]<<" Ð¢;\n";
         switch(_getch()){
             case 'b': system("cls"); return;
-            case 'a': player.AddDamage(1); break;
-            case 'h': player.RepairInc(100); break;
-            case 'H': player.HpInc(1); break;
-            case 's': if (player.Speed()>0) player.SpeedInc(0.01); break;
+            case 'a':{
+                if(player.GetToken()>=priceupgrades[0]){
+                    player.AddDamage(1);
+                    player.AddToken(-5);
+                    priceupgrades[0]+=3*1.5;}
+                break;
+            }
+            case 'h':{
+                if(player.GetToken()>=priceupgrades[1]){
+                    player.RepairInc(100);
+                    player.AddToken(-5);
+                    priceupgrades[1]+=2*1.5;}
+                break;
+            }
+            case 'H':{
+                if(player.GetToken()>=priceupgrades[2]){
+                    player.HpInc(5);
+                    player.AddToken(-5);
+                    priceupgrades[2]+=5*1.5;}
+                break;
+            }
+            case 's':{
+                if(player.Speed()>0&&player.GetToken()>=priceupgrades[3]){
+                    player.SpeedInc(0.01);
+                    player.AddToken(-5);
+                    priceupgrades[3]+=2*1.5;}
+                break;
+            }
+            case '1':{
+                if(player.GetToken()>=priceitems[0]){
+                    player.AddToken(-10);
+                    player.item={1, "Sword1", 5};
+                }
+                break;
+            }
         }
     }
 }
@@ -106,7 +147,7 @@ void Properties(){
     system("cls");
     while(true){
         setcurspos(0, 0);
-        cout<<"Íàæìè .. ùîá: b - ïîâåðíóòèñÿ íàçàä\n";
+        cout<<"ÐÐ°Ð¶Ð¼Ð¸ .. Ñ‰Ð¾Ð±: b - Ð¿Ð¾Ð²ÐµÑ€Ð½ÑƒÑ‚Ð¸ÑÑ Ð½Ð°Ð·Ð°Ð´\n";
         switch(_getch()){
             case 'b': system("cls"); return;
         }
@@ -115,7 +156,7 @@ void Properties(){
 void Menu(Player & player){
     while(true){
         setcurspos(0, 0);
-        cout<<"Íàæìè .. ùîá: s ïî÷àòè ãðàòè; u ïåðåéòè äî àï´ðåéä³â; p ïåðåéòè äî íàëàøòóâàíü\n";
+        cout<<"ÐÐ°Ð¶Ð¼Ð¸ .. Ñ‰Ð¾Ð±: s Ð¿Ð¾Ñ‡Ð°Ñ‚Ð¸ Ð³Ñ€Ð°Ñ‚Ð¸; u Ð¿ÐµÑ€ÐµÐ¹Ñ‚Ð¸ Ð´Ð¾ Ð°Ð¿Ò‘Ñ€ÐµÐ¹Ð´Ñ–Ð²; p Ð¿ÐµÑ€ÐµÐ¹Ñ‚Ð¸ Ð´Ð¾ Ð½Ð°Ð»Ð°ÑˆÑ‚ÑƒÐ²Ð°Ð½ÑŒ\n";
         switch(_getch()){
             case 's': Game(player, bx, by); break;
             case 'u': Upgrade(player); break;
