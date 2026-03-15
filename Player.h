@@ -3,25 +3,17 @@
 
 extern int bx;
 extern int by;
-struct Item{
-    int id;
-    string name;
-    int damage;
-};
 class Player: public Character{
 private:
     string m_name;
-    int level, hp_max=m_hp;
-    float exp=0, token=0;
+    int level, hp_max=m_hp, i;
+    float exp=0, token=100;
     char a;
 public:
     Player(string name):Character(10, 5, bx+rand()%129+1, by+rand()%29+1, 0.1), m_name(name){}
-    Item item;
-    int GetItemId() const { return item.id; }
-    string GetNameItem() const { return item.name; }
     string GetName() const { return m_name; }
     double GetHp() const { return m_hp; }
-    double GetDamage() const { return m_damage+item.damage; }
+    double GetDamage() const { return m_damage+ItemDB[i].damage; }
     double GetRepair() const { return m_repair; }
     float GetExp() const { return exp; }
     void AddExp(double value) { exp+=value; }
@@ -44,6 +36,13 @@ public:
                 case 'a': nx--; a='l'; break;
                 case 'd': nx++; a='r'; break;
             }
+        if(_kbhit()){
+            switch (_getch()) {
+                case '1': i=1; break;
+                case '2': i=2; break;
+                case '3': i=3; break;
+            }
+        }
             /*switch(_getch()){
                 case 72: ny--; break;
                 case 80: ny++; break;
@@ -82,4 +81,3 @@ public:
 };
 
 #endif // PLAYER_H_INCLUDED
-
