@@ -7,6 +7,7 @@
 #include <conio.h>
 #include <chrono>
 #include "SetCursPos.h"
+#include "Item.h"
 #include "Timer.h"
 #include "Character.h"
 #include "Player.h"
@@ -21,15 +22,12 @@ using namespace std;
 int bx=0, by=4;
 string state, playername="Player";
 
-
 int main(){
     SetConsoleOutputCP(1251);
     SetConsoleCP(1251);
     srand(time(NULL));
     Player player(playername);
-    player.item={1, "Sword1", 5}; //для перевірки
-    inventar(player, 100, 0); //для перевірки
     //cout<<"Type Your name: "; cin>>playername;
-    //Menu(player);
+    Menu(player);
     return 0;
 }
