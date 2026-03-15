@@ -1,7 +1,5 @@
 #ifndef SETCURSPOS_H_INCLUDED
 #define SETCURSPOS_H_INCLUDED
-#include <iostream>
-#include <windows.h>
 
 HANDLE CursOut=GetStdHandle(STD_OUTPUT_HANDLE);
 COORD curspos;
