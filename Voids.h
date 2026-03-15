@@ -3,7 +3,7 @@
 
 extern string state;
 
-int priceupgrades[4]={3, 2, 5, 2}, priceitems[3]={10, 50, 100};
+int priceupgrades[4]={3, 2, 5, 2}, priceitems[4]={0, 10, 50, 100};
 
 void Game(Player & player, int dx, int dy){
     const int MAX_ENEMY = 54;
@@ -133,10 +133,24 @@ void Upgrade(Player & player){
                     priceupgrades[3]+=2*1.5;}
                 break;
             }
-            case '1':{
+            case '1':{ //ціни я пізніше перевиставлю
                 if(player.GetToken()>=priceitems[0]){
                     player.AddToken(-10);
-                    player.item={1, "Sword1", 5};
+                    getItem(0);
+                }
+                break;
+            }
+            case '2':{
+                if(player.GetToken()>=priceitems[0]){
+                    player.AddToken(-10);
+                    getItem(1);
+                }
+                break;
+            }
+            case '3':{
+                if(player.GetToken()>=priceitems[0]){
+                    player.AddToken(-10);
+                    getItem(2);
                 }
                 break;
             }
