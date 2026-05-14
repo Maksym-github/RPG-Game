@@ -27,33 +27,26 @@ void Game(Player & player, int dx, int dy){
             }
             drawBorder(dx, dy);
             SetConsoleOutputCP(1251);
+            player.UpdateAndDrawObjects();
             setcurspos(0, 0);
             cout<<"Your name: "<<player.GetName()
             <<" Hp: "<<player.GetHp()
             <<" Damage: "<<player.GetDamage()
             <<" Experience: "<<player.GetExp()
             <<" Token: "<<player.GetToken()
-            <<"     Íàæìè .. ùîá: p - çóïèíèòè ãðó";
-            player.Clear(8,3);
+            <<"     ÐÐ°Ð¶Ð¼Ð¸ .. Ñ‰Ð¾Ð±: p - Ð·ÑƒÐ¿Ð¸Ð½Ð¸Ñ‚Ð¸ Ð³Ñ€Ñƒ ";
+            player.Clear(8, 3);
             player.Move(inputstate);
-            player.Repairing();
             player.visualplayer(player.GetPosX(), player.GetPosY());
-            for(int i=0; i<spawned; i++){
-                enemy[i].Clear(8,3);}
-            for(int i=0; i<spawned; i++){
-                enemy[i].Move(player);}
-            for(int i=0; i<spawned; i++){
-                Hit(player, enemy[i], inputstate);}
-            for(int i=0; i<spawned; i++){
-                if(enemy[i].isAlive()){
-                    enemy[i].visualenemy(enemy[i].GetPosX(), enemy[i].GetPosY());
-                }
-            }
+            player.Repairing();
+            for(int i=0; i<spawned; i++){ enemy[i].Clear(8, 3);}
+            for(int i=0; i<spawned; i++){ enemy[i].Move(player);}
+            for(int i=0; i<spawned; i++) Hit(player, enemy[i], inputstate);
+            for(int i=0; i<spawned; i++){ if(enemy[i].isAlive()){ enemy[i].visualenemy(enemy[i].GetPosX(), enemy[i].GetPosY());}}
             setcurspos(0, dy+30+2);
-        SetConsoleTextAttribute(CursOut, 15);
+            SetConsoleTextAttribute(CursOut, 15);
             cout<<" Wave: "<<wave<<"; Alive enemies: "<<aliveEnemies<<"; ";
-            for(int i=0; i<spawned; i++){
-                cout<<"Hp enemy"<<i<<": "<<enemy[i].GetHp()<<"    ";}
+            for(int i=0; i<spawned; i++){ cout<<"Hp enemy"<<i<<": "<<enemy[i].GetHp()<<"    ";}
             if(aliveEnemies == 0 && spawned == enemiesToSpawn){
                 wave++;
                 enemiesToSpawn=2+wave*2;
@@ -64,10 +57,11 @@ void Game(Player & player, int dx, int dy){
         }
         else if(currentState == GameState::pause){
             setcurspos(0, 0);
-            cout<<"Íàæìè .. ùîá: p - ïðîäîâæèòè á³é;";
+            cout<<"ÐÐ°Ð¶Ð¼Ð¸ .. Ñ‰Ð¾Ð±: p - Ð¿Ñ€Ð¾Ð´Ð¾Ð²Ð¶Ð¸Ñ‚Ð¸ Ð±Ñ–Ð¹; e - Ð²Ð¸Ð¹Ñ‚Ð¸ Ð· Ð³Ñ€Ð¸;";
             setcurspos(53, 16);
             cout<<"Paused";
             system("cls");
+            if(GetAsyncKeyState('E') & 0x8000) { currentState = GameState::play; break;}
         }
     }
     if(!player.isAlive()){
@@ -85,7 +79,7 @@ void Properties(){
     SetConsoleTextAttribute(CursOut, 15);
     while(true){
         setcurspos(0, 0);
-        cout<<"Íàæìè .. ùîá: b - ïîâåðíóòèñÿ íàçàä\n";
+        cout<<"ÃÃ Ã¦Ã¬Ã¨ .. Ã¹Ã®Ã¡: b - Ã¯Ã®Ã¢Ã¥Ã°Ã­Ã³Ã²Ã¨Ã±Ã¿ Ã­Ã Ã§Ã Ã¤\n";
         switch(_getch()){
             case 'b': system("cls"); return;
         }
@@ -96,7 +90,7 @@ void Menu(Player & player){
     while(true){
         setcurspos(0, 0);
         SetConsoleTextAttribute(CursOut, 15);
-        cout<<"Íàæìè .. ùîá: s ïî÷àòè ãðàòè; u ïåðåéòè äî àï´ðåéä³â; p ïåðåéòè äî íàëàøòóâàíü\n";
+        cout<<"ÃÃ Ã¦Ã¬Ã¨ .. Ã¹Ã®Ã¡: s Ã¯Ã®Ã·Ã Ã²Ã¨ Ã£Ã°Ã Ã²Ã¨; u Ã¯Ã¥Ã°Ã¥Ã©Ã²Ã¨ Ã¤Ã® Ã Ã¯Â´Ã°Ã¥Ã©Ã¤Â³Ã¢; p Ã¯Ã¥Ã°Ã¥Ã©Ã²Ã¨ Ã¤Ã® Ã­Ã Ã«Ã Ã¸Ã²Ã³Ã¢Ã Ã­Ã¼\n";
         switch(_getch()){
             case 's': Game(player, bx, by); break;
             case 'u': Upgrade(player); break;
