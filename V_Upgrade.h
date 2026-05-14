@@ -1,13 +1,14 @@
 #ifndef V_UPGRADE_H_INCLUDED
 #define V_UPGRADE_H_INCLUDED
 
-int priceupgrades[4]={3, 2, 5, 2}, priceitems[5]={0, 1, 1, 1, 1};
+int priceupgrades[4]={3, 2, 5, 2}, priceitems[6]={0, 1, 1, 1, 1, 1};
+int x1=50, y1=3, x2=10, y2=3, kx=10;
 int buyItem(int id){ ItemDB[id].isbuy=true; return id; }
 void Upgrade(Player & player){
     player.HpSet();
     system("cls");
     while(true){
-        inventar(player, 140, 0);
+        //inventar(player, 140, 0);
         for(int i=0; i<(int)player.inventory.size(); i++){
         setcurspos(0, 15); cout<<"DEBUG: "<<player.inventory[i]<<ItemDB[i].name<<ItemDB[player.inventory[i]].name;}
         setcurspos(0, 0);
@@ -16,8 +17,17 @@ void Upgrade(Player & player){
         <<" Hp: "<<player.GetHp()
         <<" Recovery Hp: "<<player.GetRepair()
         <<" Speed player: "<<player.Speed()<<endl;
-        cout<<"Íàæìè .. ùîá: b - ïîâåðíóòèñÿ íàçàä; a - +1 äî àòàêè çà "<<priceupgrades[0]<<" T; H - +1 äî õï çà "<<priceupgrades[2]<<" T; h - -0,1 ñåê äî â³äíîâëåííÿ õï çà "<<priceupgrades[1]<<" T; s - -0,01 ñåê øâèäêîñò³ õîäüáè çà "<<priceupgrades[3]<<" T;\n";
-        cout<<"1 - êóïèòè ìå÷ ²-ð³âíÿ çà "<<priceitems[1]<<" Ò; 2 - êóïèòè ìå÷ ²²-ð³âíÿ çà "<<priceitems[2]<<" Ò; 3 - êóïèòè ìå÷ ²²²-ð³âíÿ çà "<<priceitems[3]<<" Ò; 4 - êóïèòè ãðàíàòó "<<priceitems[4]<<" T \n";
+        cout<<"ÐÐ°Ð¶Ð¼Ð¸ .. Ñ‰Ð¾Ð±: b - Ð¿Ð¾Ð²ÐµÑ€Ð½ÑƒÑ‚Ð¸ÑÑ Ð½Ð°Ð·Ð°Ð´;";
+        setcurspos(x1, y1); cout << "BODY";
+        setcurspos(x1-kx, y1+1); cout << "a - +1 Ð´Ð¾ Ð°Ñ‚Ð°ÐºÐ¸ Ð·Ð° " << priceupgrades[0] <<" T";
+        setcurspos(x1-kx, y1+2); cout << "H - +1 Ð´Ð¾ Ñ…Ð¿ Ð·Ð° " << priceupgrades[2] << " T";
+        setcurspos(x1-kx, y1+3); cout << "h - -0,1 ÑÐµÐº Ð´Ð¾ Ð²Ñ–Ð´Ð½Ð¾Ð²Ð»ÐµÐ½Ð½Ñ Ñ…Ð¿ Ð·Ð° " << priceupgrades[1] << " T";
+        setcurspos(x1-kx, y1+4); cout << "s - -0,01 ÑÐµÐº ÑˆÐ²Ð¸Ð´ÐºÐ¾ÑÑ‚Ñ– Ñ…Ð¾Ð´ÑŒÐ±Ð¸ Ð·Ð° " << priceupgrades[3] << " T";
+        setcurspos(x2, y2); cout << "ITEMS";
+        setcurspos(x2-kx, y2+1); cout << "1 - ÐºÑƒÐ¿Ð¸Ñ‚Ð¸ Ð¼ÐµÑ‡ Ð†-Ñ€Ñ–Ð²Ð½Ñ Ð·Ð° " << priceitems[1] << " Ð¢";
+        setcurspos(x2-kx, y2+2); cout << "2 - ÐºÑƒÐ¿Ð¸Ñ‚Ð¸ Ð¼ÐµÑ‡ Ð†Ð†-Ñ€Ñ–Ð²Ð½Ñ Ð·Ð° " << priceitems[2] << " Ð¢";
+        setcurspos(x2-kx, y2+3); cout << "3 - ÐºÑƒÐ¿Ð¸Ñ‚Ð¸ Ð¼ÐµÑ‡ Ð†Ð†Ð†-Ñ€Ñ–Ð²Ð½Ñ Ð·Ð° " << priceitems[3] << " Ð¢";
+        setcurspos(x2-kx, y2+4); cout << "4 - ÐºÑƒÐ¿Ð¸Ñ‚Ð¸ Ð³Ñ€Ð°Ð½Ð°Ñ‚Ñƒ " << priceitems[4] << " T";
         switch(_getch()){
             case 'b': system("cls"); return;
             case 'a':{
@@ -76,6 +86,14 @@ void Upgrade(Player & player){
                 if(player.GetToken()>=priceitems[4]&&!ItemDB[3].isbuy){
                     player.AddToken(-priceitems[4]);
                     player.inventory.push_back(buyItem(3));
+                }
+                //if(ItemDB[3].isbuy) player.inventory.push_back(ItemDB[3].id);
+                break;
+            }
+            case '5':{
+                if(player.GetToken()>=priceitems[5]&&!ItemDB[4].isbuy){
+                    player.AddToken(-priceitems[5]);
+                    player.inventory.push_back(buyItem(4));
                 }
                 //if(ItemDB[3].isbuy) player.inventory.push_back(ItemDB[3].id);
                 break;
