@@ -40,12 +40,22 @@ void items(int x, int y, int c){
     case 4:{
         setcurspos(x, y);
         cout<<"4  -------"; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
-        cout<<"  //     \\  "; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
-        cout<<"//         \\"; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
+        cout<<"  /       \\  "; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
+        cout<<" /         \\"; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
         cout<<" |         | "; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
-        cout<<"\\         //"; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
-        cout<<"  \\     //  "; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
+        cout<<" \\         /"; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
+        cout<<"  \\       /  "; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
         cout<<"   -------   "; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
+        break;
+        }
+    case 5:{
+        setcurspos(x, y);
+        cout<<"5 ......"; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
+        cout<<"  :.  .:"; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
+        cout<<"  .'  '."; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
+        cout<<"  |    |"; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
+        cout<<"  |    |"; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
+        cout<<"  `----'"; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
         break;
         }
     }
