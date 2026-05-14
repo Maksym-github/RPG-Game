@@ -13,35 +13,50 @@ private:
     double m_regenDelay = 3.0;
 public:
     vector<int> inventory;
+    vector<WorldObject> activeObjects;
     int oldId=-1;
     Player(string name):Character(10, 5, bx+rand()%120+1, by+rand()%24+1, 0.1, 2), m_name(name), hp_max(m_hp){}
     string GetName() const { return m_name; }
     double GetHp() const { return m_hp; }
     void EquipWeapon(int id) {
-        if (id < 0 || id >= (int)ItemDB.size()) return;
+        Item& item = getItem(id);
+        if (!item.isbuy) return;
         if (id == oldId) {
             oldId = -1;
-            m_damage = 5;
+            m_damage -= item.value;
         }
-        else if (ItemDB[id].isbuy) {
+        else {
+            if (oldId != -1) {
+                Item& oldItem = getItem(oldId);
+                m_damage -= oldItem.value;
+            }
             oldId = id;
-            m_damage = 5 + ItemDB[oldId].value;
+            m_damage += item.value;
         }
     }
-    void Throw(){
-        if(ItemDB[4].isbuy){
-            setcurspos(m_x, m_y);
-            cout<<"-----"; curspos.X--; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
-            cout<<"//   \\"; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
-            cout<<"|     |"; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
-            cout<<"\\   //"; curspos.X--; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
-            cout<<"-----"; curspos.X++; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
+    void Throw(Item& item) {
+        WorldObject obj;
+        obj.x = m_x;
+        obj.y = m_y;
+        obj.active = true;
+        obj.duration = 2.0;
+        obj.timer.reset();
+        obj.type = item.type;
+
+        if (item.type == granate) {
+            obj.visual = "[ * ]";
+            obj.color = 12;
+        } else if (item.type == potion) {
+            obj.visual = "( ~ )";
+            obj.color = 10;
         }
+
+        activeObjects.push_back(obj);
     }
     void Consume(float healAmount) {
-        m_hp += healAmount;
-        if (m_hp > hp_max) m_hp = hp_max;
-        // Можна додати звук або повідомлення "Ви випили зілля"
+        if (m_hp+healAmount < hp_max) m_hp += healAmount;
+        if (m_hp >= hp_max) m_hp = hp_max;
+        // РњРѕР¶РЅР° РґРѕРґР°С‚Рё Р·РІСѓРє Р°Р±Рѕ РїРѕРІС–РґРѕРјР»РµРЅРЅСЏ "Р’Рё РІРёРїРёР»Рё Р·С–Р»Р»СЏ"
     }
     void UseItem(int slotIndex) {
         if (slotIndex >= (int)inventory.size() || inventory[slotIndex] == 0) return;
@@ -61,7 +76,8 @@ public:
                 inventory[slotIndex]=0;
                 break;
             case granate:
-                Throw();
+                Throw(item);
+                inventory[slotIndex] = 0;
                 break;
         }
     }
@@ -83,7 +99,13 @@ public:
         if (_kbhit()) {
             char key = _getch();
             if (key >= '0' && key <= '9') {
-                UseItem(key - '0');
+                int slot;
+                if (key == '0') {
+                    slot = 9;
+                } else {
+                    slot = key - '0';
+                }
+                UseItem(slot);
             }}
 
         int nx=m_x, ny=m_y;
@@ -103,21 +125,6 @@ public:
             }
         }
     }
-    void visualplayer(int x, int y){
-        SetConsoleTextAttribute(CursOut, 15);
-        if(a=='l'){
-            setcurspos(x, y);
-            cout<<" ######"; curspos.X=x; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
-            cout<<"#@   @ #"; curspos.X=x; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
-            cout<<" ######";
-        }
-        else if(a=='r'){
-            setcurspos(x, y);
-            cout<<" ######"; curspos.X=x; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
-            cout<<"# @   @#"; curspos.X=x; curspos.Y++; SetConsoleCursorPosition(CursOut, curspos);
-            cout<<" ######";
-        }
-    }
     void Repairing() {
         if (m_hp < hp_max) {
             if (m_regenTimer.elapsed() >= m_regenDelay) {
@@ -127,6 +134,36 @@ public:
             }
         } else {
             m_regenTimer.reset();
+        }
+    }
+    void UpdateAndDrawObjects() {
+        for (int i = 0; i < activeObjects.size(); ) {
+            if (activeObjects[i].timer.elapsed() >= activeObjects[i].duration) {
+                activeObjects.erase(activeObjects.begin() + i);
+            } else {
+                SetConsoleTextAttribute(CursOut, activeObjects[i].color);
+                setcurspos(activeObjects[i].x, activeObjects[i].y);
+                cout << activeObjects[i].visual;
+
+                if (activeObjects[i].type == granate && activeObjects[i].timer.elapsed() > 1.8) {
+                    cout << " BOOM! ";
+                }
+                i++;
+            }
+        }
+        SetConsoleTextAttribute(CursOut, 15);
+    }
+    void visualplayer(int x, int y){
+        SetConsoleTextAttribute(CursOut, 15);
+        if(a=='l'){
+            setcurspos(x, y);   cout<<" ######";
+            setcurspos(x, y+1); cout<<"#@   @ #";
+            setcurspos(x, y+2); cout<<" ######";
+        }
+        else if(a=='r'){
+            setcurspos(x, y);   cout<<" ######";
+            setcurspos(x, y+1); cout<<"# @   @#";
+            setcurspos(x, y+2); cout<<" ######";
         }
     }
 };
